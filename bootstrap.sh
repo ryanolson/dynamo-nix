@@ -75,17 +75,31 @@ log "🏠 Installing and configuring Home Manager..."
 CURRENT_USER=$(whoami)
 log "Configuring for user: $CURRENT_USER"
 
-# Clear any existing profile conflicts
+# Clear any existing profile conflicts - more comprehensive cleanup
 log "Cleaning up any existing profiles..."
-nix profile list 2>/dev/null | while read -r line; do
-    if echo "$line" | grep -q home-manager; then
-        profile_num=$(echo "$line" | cut -d' ' -f1)
-        nix profile remove "$profile_num" 2>/dev/null || true
-    fi
-done
 
-# Install Home Manager
-nix profile install home-manager/$HM_BRANCH
+# First, try to remove Home Manager profiles by pattern
+if nix profile list 2>/dev/null | grep -q home-manager; then
+    log "Found existing Home Manager profiles, removing them..."
+    nix profile list 2>/dev/null | grep home-manager | while IFS= read -r line; do
+        profile_num=$(echo "$line" | cut -d' ' -f1)
+        log "Removing profile $profile_num: $line"
+        nix profile remove "$profile_num" 2>/dev/null || true
+    done
+fi
+
+# Also try removing by the exact flake reference that might conflict
+nix profile remove "flake:home-manager/$HM_BRANCH#packages.x86_64-linux.default" 2>/dev/null || true
+nix profile remove "home-manager/$HM_BRANCH" 2>/dev/null || true
+
+# Clear home-manager state directories
+log "Cleaning up Home Manager state directories..."
+rm -rf ~/.local/state/home-manager 2>/dev/null || true
+rm -rf ~/.local/state/nix/profiles/home-manager* 2>/dev/null || true
+
+# Install Home Manager using the modern command
+log "Installing Home Manager..."
+nix profile install "nixpkgs#home-manager"
 
 # Apply the dynamic configuration (works for any user)
 log "Applying dynamic configuration for $CURRENT_USER..."
