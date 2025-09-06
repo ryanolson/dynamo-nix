@@ -87,14 +87,9 @@ done
 # Install Home Manager
 nix profile install home-manager/$HM_BRANCH
 
-if [[ "$REPO_URL" == *"github:"* ]]; then
-    # Try user-specific config first  
-    log "Attempting to use configuration for $CURRENT_USER..."
-    home-manager switch --flake $REPO_URL#$CURRENT_USER --no-write-lock-file || error "Failed to setup Home Manager"
-else
-    # Use local path for testing  
-    home-manager switch --flake $REPO_URL#default --no-write-lock-file || error "Failed to setup Home Manager"
-fi
+# Apply the dynamic configuration (works for any user)
+log "Applying dynamic configuration for $CURRENT_USER..."
+home-manager switch --flake $REPO_URL#default --no-write-lock-file || error "Failed to setup Home Manager"
 
 success "✅ Dynamo development environment setup complete!"
 log "💡 Next steps:"
