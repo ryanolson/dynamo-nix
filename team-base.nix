@@ -217,7 +217,7 @@
       # Update team configuration
       if test $update_config = true
           log "⚙️  Updating team configuration..."
-          if home-manager switch --flake github:ryanolson/dynamo-nix --no-write-lock-file
+          if home-manager switch --flake github:ryanolson/dynamo-nix#default --no-write-lock-file
               success "✅ Team configuration updated successfully"
           else
               error "❌ Failed to update team configuration"
