@@ -14,20 +14,20 @@
       # Auto-detect system or default to x86_64-linux
       system = builtins.currentSystem or "x86_64-linux";
       
-      # Create a configuration that detects user dynamically
-      mkDynamicConfig = home-manager.lib.homeManagerConfiguration {
+      # Create a generic configuration
+      mkConfig = home-manager.lib.homeManagerConfiguration {
         pkgs = nixpkgs.legacyPackages.${system};
         modules = [ 
           ./team-base.nix 
-          {
-            # Use environment variables for dynamic user detection
-            home.username = builtins.getEnv "USER";
-            home.homeDirectory = builtins.getEnv "HOME";
-          }
+          # Use environment variables with fallbacks
+          ({lib, ...}: {
+            home.username = lib.mkDefault (builtins.getEnv "HM_USER");
+            home.homeDirectory = lib.mkDefault (builtins.getEnv "HM_HOME");
+          })
         ];
       };
     in {
-      # Single dynamic configuration that works for any user
-      homeConfigurations.default = mkDynamicConfig;
+      # Single configuration that can be overridden
+      homeConfigurations.default = mkConfig;
     };
 }

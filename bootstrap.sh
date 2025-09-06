@@ -103,7 +103,10 @@ nix profile install "nixpkgs#home-manager"
 
 # Apply the dynamic configuration (works for any user)
 log "Applying dynamic configuration for $CURRENT_USER..."
-home-manager switch --flake $REPO_URL#default --no-write-lock-file || error "Failed to setup Home Manager"
+# Use --impure to allow environment variable access and create a temporary config
+export HM_USER="$CURRENT_USER"
+export HM_HOME="$HOME"
+home-manager switch --flake $REPO_URL#default --no-write-lock-file --impure || error "Failed to setup Home Manager"
 
 success "✅ Dynamo development environment setup complete!"
 log "💡 Next steps:"
