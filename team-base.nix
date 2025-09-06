@@ -7,9 +7,9 @@
   home.packages = with pkgs; [
     # Language toolchains (managed independently)
     rustup          # Rust toolchain manager - allows independent updates
-    python3         # Python interpreter
+    uv              # Python package and version manager - replaces pip/pipenv/poetry
     zig             # Zig language
-    nodejs_20       # Node.js runtime and npm package manager
+    nodejs_22       # Node.js runtime and npm package manager (latest LTS)
 
     # Editors and shell
     helix           # Text editor
