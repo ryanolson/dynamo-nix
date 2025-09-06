@@ -158,7 +158,4 @@
     # Enable Home Manager to manage itself
     home-manager.enable = true;
   };
-
-  # Set default shell
-  programs.fish.enable = true;
 }
