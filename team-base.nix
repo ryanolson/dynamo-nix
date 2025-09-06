@@ -47,7 +47,7 @@
     kondo           # Project cleanup tool
     
     # Language servers and formatters
-    rust-analyzer   # Rust LSP
+    # rust-analyzer provided by rustup components
     clang-tools     # clang-format, clangd for C/C++
     gopls           # Go language server
     nodePackages.typescript-language-server  # TypeScript LSP
