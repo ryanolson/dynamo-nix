@@ -53,7 +53,6 @@
     nodePackages.typescript-language-server  # TypeScript LSP
     nodePackages.vscode-langservers-extracted # HTML/CSS/JSON LSPs
     nodePackages.prettier  # Formatter for web languages
-    ruff            # Python linter/formatter (works with uv-managed Python)
     
     # Additional development tools
     sccache         # Compiler cache (for faster builds)
