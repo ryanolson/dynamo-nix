@@ -13,10 +13,33 @@
     let
       # Auto-detect system or default to x86_64-linux
       system = builtins.currentSystem or "x86_64-linux";
-    in {
-      homeConfigurations.default = home-manager.lib.homeManagerConfiguration {
+      
+      # Create a configuration that can work with any user
+      mkUserConfig = username: home-manager.lib.homeManagerConfiguration {
         pkgs = nixpkgs.legacyPackages.${system};
-        modules = [ ./team-base.nix ];
+        modules = [ 
+          ./team-base.nix 
+          {
+            home.username = username;
+            home.homeDirectory = "/home/${username}";
+          }
+        ];
+      };
+    in {
+      # Default config (fallback)
+      homeConfigurations.default = mkUserConfig "user";
+      
+      # Common usernames for convenience
+      homeConfigurations.ryan = mkUserConfig "ryan";
+      homeConfigurations.root = home-manager.lib.homeManagerConfiguration {
+        pkgs = nixpkgs.legacyPackages.${system};
+        modules = [ 
+          ./team-base.nix 
+          {
+            home.username = "root";
+            home.homeDirectory = "/root";
+          }
+        ];
       };
     };
 }
