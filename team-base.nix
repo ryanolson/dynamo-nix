@@ -284,10 +284,6 @@
         
         # System tools
         e = "etcdctl";
-        
-        # Update tools
-        update = "dynamo-update-tools";
-        up = "dynamo-update-tools";
       };
       
       # Initialize tools that need shell integration
