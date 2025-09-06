@@ -8,6 +8,7 @@
     # Language toolchains (managed independently)
     rustup          # Rust toolchain manager - allows independent updates
     uv              # Python package and version manager - replaces pip/pipenv/poetry
+    python3         # System Python3 (for build tools like node-gyp, not for projects)
     go              # Go language toolchain
     zig             # Zig language
     nodejs_22       # Node.js runtime and npm package manager (latest LTS)
@@ -58,6 +59,10 @@
     sccache         # Compiler cache (for faster builds)
     cargo-edit      # Cargo extensions (cargo add, cargo rm, etc)
     cargo-watch     # Cargo file watcher
+    
+    # Build tools for npm packages with native dependencies
+    gcc             # C compiler for node-gyp
+    gnumake         # Make for building native modules
     
     # System administration tools
     kubectl         # Kubernetes CLI
@@ -127,6 +132,11 @@
         
         # Add cargo to path (for rustup-managed tools)
         set -gx PATH $HOME/.cargo/bin $PATH
+        
+        # Configure npm to use user directory for global packages
+        set -gx NPM_CONFIG_PREFIX $HOME/.npm-global
+        set -gx PATH $HOME/.npm-global/bin $PATH
+        mkdir -p $HOME/.npm-global
         
         # Install npm packages on first run if they don't exist
         if not type -q ccmanager
