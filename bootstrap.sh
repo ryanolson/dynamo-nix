@@ -72,10 +72,10 @@ fi
 log "🏠 Installing and configuring Home Manager..."
 if [[ "$REPO_URL" == *"github:"* ]]; then
     # Use GitHub repo - apply team configuration directly
-    nix run home-manager/$HM_BRANCH -- switch --flake $REPO_URL || error "Failed to setup Home Manager"
+    nix run home-manager/$HM_BRANCH -- switch --flake $REPO_URL --no-write-lock-file || error "Failed to setup Home Manager"
 else
     # Use local path for testing - apply team configuration directly  
-    nix run home-manager/$HM_BRANCH -- switch --flake $REPO_URL || error "Failed to setup Home Manager"
+    nix run home-manager/$HM_BRANCH -- switch --flake $REPO_URL --no-write-lock-file || error "Failed to setup Home Manager"
 fi
 
 success "✅ Dynamo development environment setup complete!"
