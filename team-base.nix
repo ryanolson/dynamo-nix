@@ -322,7 +322,7 @@
           npm install -g ccmanager
         end
         
-        if not type -q claude-code
+        if not type -q claude
           echo "🔧 Installing claude-code (Claude AI CLI)..."
           npm install -g @anthropic-ai/claude-code
         end

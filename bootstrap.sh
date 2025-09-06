@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-REPO_URL="github:ryanolson/dynamo-nix"
+REPO_URL="github:ryanolson/dynamo-dotfiles"
 HM_BRANCH="release-25.05"
 
 # Colors for output
@@ -21,23 +21,8 @@ if [[ "$OSTYPE" != "linux-gnu"* && "$OSTYPE" != "darwin"* ]]; then
     error "Unsupported operating system: $OSTYPE"
 fi
 
-log "🚀 Bootstrapping Dynamo development environment from $REPO_URL"
-
-# Install system dependencies
-log "📋 Installing system dependencies..."
-if command -v apt-get &> /dev/null; then
-    # Ubuntu/Debian
-    sudo apt-get update -qq
-    sudo apt-get install -y -qq xz-utils curl git
-elif command -v yum &> /dev/null; then
-    # RHEL/CentOS
-    sudo yum install -y xz curl git
-elif command -v brew &> /dev/null; then
-    # macOS - dependencies usually available
-    log "📦 macOS detected, dependencies should be available"
-else
-    warn "Unknown package manager - ensure xz, curl, and git are installed"
-fi
+log "🚀 Bootstrapping personal development environment from $REPO_URL"
+log "📦 This includes the ryanolson/dynamo-nix team base configuration"
 
 # Install Nix if not present
 if ! command -v nix &> /dev/null; then
@@ -59,6 +44,36 @@ log "⚙️  Configuring Nix flakes..."
 mkdir -p ~/.config/nix
 echo "experimental-features = nix-command flakes" > ~/.config/nix/nix.conf
 
+# Clean up any existing Home Manager installations
+log "🧹 Cleaning up existing Home Manager installations..."
+nix profile remove home-manager 2>/dev/null || true
+nix profile remove nixpkgs#home-manager 2>/dev/null || true
+rm -rf ~/.local/state/home-manager 2>/dev/null || true
+rm -rf ~/.local/state/nix/profiles/home-manager* 2>/dev/null || true
+
+# Bootstrap Home Manager with personal config
+log "🏠 Installing personal configuration (includes team base)..."
+if [[ "$REPO_URL" == *"github:"* ]]; then
+    # Use GitHub repo with explicit default configuration and impure flag for fetchTarball
+    nix run home-manager/$HM_BRANCH -- init --switch --flake $REPO_URL#default --impure || error "Failed to setup Home Manager"
+else
+    # Use local path for testing
+    nix run home-manager/$HM_BRANCH -- init --switch --flake $REPO_URL#default --impure || error "Failed to setup Home Manager"
+fi
+
+# Apply the configuration to ensure everything is properly loaded
+log "🔄 Applying final configuration..."
+home-manager switch --flake $REPO_URL#default --no-write-lock-file --impure || warn "Configuration switch completed with warnings"
+
+# Initialize fish shell to trigger lazy loads and setup
+log "🐠 Initializing fish shell and triggering lazy loads..."
+if command -v fish &> /dev/null; then
+    # Run fish briefly to trigger shellInit and lazy package installations
+    fish -c "echo 'Fish shell initialized successfully'" || warn "Fish initialization completed with warnings"
+else
+    warn "Fish shell not available yet - may require shell restart"
+fi
+
 # Post-install setup instructions
 log "🦀 Installing Rust toolchain (independent of Nix)..."
 if ! command -v rustup &> /dev/null; then
@@ -68,75 +83,18 @@ if ! command -v rustup &> /dev/null; then
     warn "  rustup component add rust-analyzer clippy rustfmt"
 fi
 
-# Bootstrap Home Manager  
-log "🏠 Installing and configuring Home Manager..."
-
-# Detect current user
-CURRENT_USER=$(whoami)
-log "Configuring for user: $CURRENT_USER"
-
-# Clear any existing profile conflicts - more comprehensive cleanup
-log "Cleaning up any existing profiles..."
-
-# First, try to remove Home Manager profiles by pattern
-if nix profile list 2>/dev/null | grep -q home-manager; then
-    log "Found existing Home Manager profiles, removing them..."
-    nix profile list 2>/dev/null | grep home-manager | while IFS= read -r line; do
-        profile_num=$(echo "$line" | cut -d' ' -f1)
-        log "Removing profile $profile_num: $line"
-        nix profile remove "$profile_num" 2>/dev/null || true
-    done
-fi
-
-# Also try removing by the exact flake reference that might conflict
-nix profile remove "flake:home-manager/$HM_BRANCH#packages.x86_64-linux.default" 2>/dev/null || true
-nix profile remove "home-manager/$HM_BRANCH" 2>/dev/null || true
-
-# Clear home-manager state directories
-log "Cleaning up Home Manager state directories..."
-rm -rf ~/.local/state/home-manager 2>/dev/null || true
-rm -rf ~/.local/state/nix/profiles/home-manager* 2>/dev/null || true
-
-# Install Home Manager using the modern command
-log "Installing Home Manager..."
-nix profile install "nixpkgs#home-manager"
-
-# Create a local configuration file that imports the team base
-log "Creating local configuration for $CURRENT_USER..."
-mkdir -p ~/.config/home-manager
-cat > ~/.config/home-manager/home.nix <<EOF
-{ config, pkgs, ... }:
-
-{
-  # Import team base configuration
-  imports = [
-    (builtins.fetchTarball "https://github.com/ryanolson/dynamo-nix/archive/main.tar.gz" + "/team-base.nix")
-  ];
-
-  # Set user-specific configuration
-  home.username = "$CURRENT_USER";
-  home.homeDirectory = "$HOME";
-  home.stateVersion = "25.05";
-}
-EOF
-
-# Apply the local configuration
-log "Applying local configuration for $CURRENT_USER..."
-home-manager switch --no-write-lock-file || error "Failed to setup Home Manager"
-
-success "✅ Dynamo development environment setup complete!"
+success "✅ Personal development environment setup complete!"
 log "💡 Next steps:"
 log "   1. Restart your shell or run: source ~/.nix-profile/etc/profile.d/nix.sh"
 log "   2. If using Fish shell, run: fish"
 log "   3. Install Rust toolchain: rustup install stable && rustup default stable"
 log "   4. Add Rust components: rustup component add rust-analyzer clippy rustfmt"
+log "   5. Check your Git config: git config --list"
 log ""
-log "🔧 Installed tools:"
-log "   - Editors: helix, lazygit, GitHub CLI (gh)" 
-log "   - Shell: fish, starship prompt, zellij multiplexer"
-log "   - CLI: bat, eza, broot, zoxide, ripgrep, fd, yazi"
-log "   - Languages: rustup, python3, zig, nodejs+npm"
-log "   - System: docker, kubectl, etcdctl"
-log "   - AI Tools: ccmanager (Claude Code manager), ruler (AI agent config)"
+log "🔧 Your environment includes:"
+log "   - All Dynamo team tools and configurations"
+log "   - Your personal Git configuration"
+log "   - Your personal shell aliases and shortcuts"
 log ""
-log "⚙️  All configuration files have been installed to ~/.config/"
+log "⚙️  Configuration files are in ~/.config/"
+log "🔄 To update: home-manager switch --flake $REPO_URL#default --no-write-lock-file --impure"
