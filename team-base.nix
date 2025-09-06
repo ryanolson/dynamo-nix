@@ -7,7 +7,7 @@
   home.packages = with pkgs; [
     # Language toolchains (managed independently)
     rustup          # Rust toolchain manager - allows independent updates
-    uv              # Python package and version manager - replaces pip/pipenv/poetry
+    uv              # Python package and version manager - Note: use 'home-manager switch' to update
     python3         # System Python3 (for build tools like node-gyp, not for projects)
     go              # Go language toolchain
     zig             # Zig language
@@ -138,10 +138,23 @@
         set -gx PATH $HOME/.npm-global/bin $PATH
         mkdir -p $HOME/.npm-global
         
+        # Set up Rust toolchain if not configured
+        if not rustup show active-toolchain &>/dev/null
+          echo "🦀 Setting up Rust stable toolchain..."
+          rustup install stable
+          rustup default stable
+          rustup component add rust-analyzer clippy rustfmt
+        end
+        
         # Install npm packages on first run if they don't exist
         if not type -q ccmanager
           echo "🔧 Installing ccmanager (Claude Code session manager)..."
           npm install -g ccmanager
+        end
+        
+        if not type -q claude-code
+          echo "🔧 Installing claude-code (Claude AI CLI)..."
+          npm install -g @anthropic-ai/claude-code
         end
         
         if not type -q ruler
