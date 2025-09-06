@@ -8,6 +8,7 @@
     # Language toolchains (managed independently)
     rustup          # Rust toolchain manager - allows independent updates
     uv              # Python package and version manager - replaces pip/pipenv/poetry
+    go              # Go language toolchain
     zig             # Zig language
     nodejs_22       # Node.js runtime and npm package manager (latest LTS)
 
@@ -34,7 +35,8 @@
     
     # Development tools
     just            # Command runner (make replacement)
-    watchexec       # File watcher
+    bacon           # Rust-specific continuous testing tool
+    watchexec       # General file watcher
     
     # Additional CLI tools from your config
     procs           # ps replacement
@@ -51,8 +53,7 @@
     nodePackages.typescript-language-server  # TypeScript LSP
     nodePackages.vscode-langservers-extracted # HTML/CSS/JSON LSPs
     nodePackages.prettier  # Formatter for web languages
-    ruff            # Python linter/formatter
-    python311Packages.python-lsp-server  # Python LSP
+    ruff            # Python linter/formatter (works with uv-managed Python)
     
     # Additional development tools
     sccache         # Compiler cache (for faster builds)
@@ -60,8 +61,6 @@
     cargo-watch     # Cargo file watcher
     
     # System administration tools
-    docker          # Container runtime
-    docker-compose  # Container orchestration
     kubectl         # Kubernetes CLI
     etcd            # Provides etcdctl command
     
@@ -108,10 +107,6 @@
         
         # Development shortcuts  
         h = "hx";  # helix
-        
-        # Docker shortcuts
-        d = "docker";
-        dc = "docker-compose";
         
         # Kubernetes
         k = "kubectl";
