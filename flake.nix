@@ -31,6 +31,7 @@
       
       # Common usernames for convenience
       homeConfigurations.ryan = mkUserConfig "ryan";
+      homeConfigurations.ubuntu = mkUserConfig "ubuntu";
       homeConfigurations.root = home-manager.lib.homeManagerConfiguration {
         pkgs = nixpkgs.legacyPackages.${system};
         modules = [ 
