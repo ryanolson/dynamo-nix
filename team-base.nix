@@ -1,5 +1,11 @@
-{ pkgs, ... }: {
+{ pkgs, ... }: 
+let 
+  username = builtins.getEnv "USER";
+  homeDirectory = builtins.getEnv "HOME";
+in {
   home = {
+    inherit username;
+    inherit homeDirectory;
     stateVersion = "25.05";
   };
 
