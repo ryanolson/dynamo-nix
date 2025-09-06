@@ -71,21 +71,26 @@ fi
 # Bootstrap Home Manager  
 log "🏠 Installing and configuring Home Manager..."
 
-# First install Home Manager so it's available as a command
-nix profile install home-manager/$HM_BRANCH
-
-# Detect current user and use appropriate configuration
+# Detect current user
 CURRENT_USER=$(whoami)
 log "Configuring for user: $CURRENT_USER"
 
-if [[ "$REPO_URL" == *"github:"* ]]; then
-    # Try user-specific config first, fall back to default
-    if home-manager switch --flake $REPO_URL#$CURRENT_USER --no-write-lock-file 2>/dev/null; then
-        log "Using user-specific configuration for $CURRENT_USER"
-    else
-        warn "User-specific config not found, using default configuration"
-        home-manager switch --flake $REPO_URL#default --no-write-lock-file || error "Failed to setup Home Manager"
+# Clear any existing profile conflicts
+log "Cleaning up any existing profiles..."
+nix profile list 2>/dev/null | while read -r line; do
+    if echo "$line" | grep -q home-manager; then
+        profile_num=$(echo "$line" | cut -d' ' -f1)
+        nix profile remove "$profile_num" 2>/dev/null || true
     fi
+done
+
+# Install Home Manager
+nix profile install home-manager/$HM_BRANCH
+
+if [[ "$REPO_URL" == *"github:"* ]]; then
+    # Try user-specific config first  
+    log "Attempting to use configuration for $CURRENT_USER..."
+    home-manager switch --flake $REPO_URL#$CURRENT_USER --no-write-lock-file || error "Failed to setup Home Manager"
 else
     # Use local path for testing  
     home-manager switch --flake $REPO_URL#default --no-write-lock-file || error "Failed to setup Home Manager"
