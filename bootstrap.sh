@@ -68,14 +68,18 @@ if ! command -v rustup &> /dev/null; then
     warn "  rustup component add rust-analyzer clippy rustfmt"
 fi
 
-# Bootstrap Home Manager
+# Bootstrap Home Manager  
 log "🏠 Installing and configuring Home Manager..."
+
+# First install Home Manager so it's available as a command
+nix profile install home-manager/$HM_BRANCH
+
 if [[ "$REPO_URL" == *"github:"* ]]; then
-    # Use GitHub repo - apply team configuration directly with explicit config name
-    nix run home-manager/$HM_BRANCH -- switch --flake $REPO_URL#default --no-write-lock-file || error "Failed to setup Home Manager"
+    # Use GitHub repo - apply team configuration directly
+    home-manager switch --flake $REPO_URL#default --no-write-lock-file || error "Failed to setup Home Manager"
 else
-    # Use local path for testing - apply team configuration directly with explicit config name
-    nix run home-manager/$HM_BRANCH -- switch --flake $REPO_URL#default --no-write-lock-file || error "Failed to setup Home Manager"
+    # Use local path for testing  
+    home-manager switch --flake $REPO_URL#default --no-write-lock-file || error "Failed to setup Home Manager"
 fi
 
 success "✅ Dynamo development environment setup complete!"
