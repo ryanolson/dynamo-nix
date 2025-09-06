@@ -23,6 +23,22 @@ fi
 
 log "🚀 Bootstrapping Dynamo development environment from $REPO_URL"
 
+# Install system dependencies
+log "📋 Installing system dependencies..."
+if command -v apt-get &> /dev/null; then
+    # Ubuntu/Debian
+    sudo apt-get update -qq
+    sudo apt-get install -y -qq xz-utils curl git
+elif command -v yum &> /dev/null; then
+    # RHEL/CentOS
+    sudo yum install -y xz curl git
+elif command -v brew &> /dev/null; then
+    # macOS - dependencies usually available
+    log "📦 macOS detected, dependencies should be available"
+else
+    warn "Unknown package manager - ensure xz, curl, and git are installed"
+fi
+
 # Install Nix if not present
 if ! command -v nix &> /dev/null; then
     log "📦 Installing Nix package manager..."
