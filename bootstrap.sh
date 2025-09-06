@@ -101,12 +101,28 @@ rm -rf ~/.local/state/nix/profiles/home-manager* 2>/dev/null || true
 log "Installing Home Manager..."
 nix profile install "nixpkgs#home-manager"
 
-# Apply the dynamic configuration (works for any user)
-log "Applying dynamic configuration for $CURRENT_USER..."
-# Use --impure to allow environment variable access and create a temporary config
-export HM_USER="$CURRENT_USER"
-export HM_HOME="$HOME"
-home-manager switch --flake $REPO_URL#default --no-write-lock-file --impure || error "Failed to setup Home Manager"
+# Create a local configuration file that imports the team base
+log "Creating local configuration for $CURRENT_USER..."
+mkdir -p ~/.config/home-manager
+cat > ~/.config/home-manager/home.nix <<EOF
+{ config, pkgs, ... }:
+
+{
+  # Import team base configuration
+  imports = [
+    (builtins.fetchTarball "https://github.com/ryanolson/dynamo-nix/archive/main.tar.gz" + "/team-base.nix")
+  ];
+
+  # Set user-specific configuration
+  home.username = "$CURRENT_USER";
+  home.homeDirectory = "$HOME";
+  home.stateVersion = "25.05";
+}
+EOF
+
+# Apply the local configuration
+log "Applying local configuration for $CURRENT_USER..."
+home-manager switch --no-write-lock-file || error "Failed to setup Home Manager"
 
 success "✅ Dynamo development environment setup complete!"
 log "💡 Next steps:"
